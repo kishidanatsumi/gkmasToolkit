@@ -234,82 +234,81 @@ def __createSQLiteDB(jDict: dict, outputString: str, isDiff: bool = False):
     conn.close()
     return
 
-def __diffRevision(jDict: dict) -> dict:
-    p = Path(__outputPathString)
-    manifestList = [it for it in p.iterdir() if re.match(r"^manifest_v\d+.json$", it.name)]
-    if manifestList.count == 0:
-        console.print(f"[bold]>>> [Info][/bold] No previous revision json found.\n")
-        return jDict
-    manifestList.sort(key=lambda it: it.name, reverse=True)
-    previousOne = manifestList[0]
-    jDictPrev = json.loads(previousOne.read_bytes())
-
-    if jDictPrev["revision"] > jDict["revision"]:
-        console.print(f"[bold yellow]>>> [Warning][/bold yellow] Old revision, diff operation has been stopped.\n")
-        return jDict
-
-    if jDictPrev["revision"] == jDict["revision"]:
-        if manifestList.__len__() == 1:
-            console.print(f"[bold yellow]>>> [Warning][/bold yellow] Duplicate revision, diff operation has been stopped.\n")
-            return jDict
-        console.print(f"[bold yellow]>>> [Warning][/bold yellow] Duplicate revision.\n")
-        jDictPrev = json.loads(manifestList[1].read_bytes())
-
-
-    if jDictPrev["revision"] >= jDict["revision"]:
-        jDictPrev = json.loads(manifestList[1].read_bytes())
-        console.print(f"[bold yellow]>>> [Warning][/bold yellow] Duplicate or old revision, diff operation has been stopped.\n")
-        return jDict
-
-    assetBundlePrevDict = {
-        it["id"]: it["generation"]
-        for it in jDictPrev["assetBundleList"]
-    }
-    resourcePrevDict = {
-        it["id"]: it["generation"]
-        for it in jDictPrev["resourceList"]
-    }
-
-    diffNewDict = {
-        "revision": jDict["revision"],
-        "assetBundleList": [ it1 for it1 in jDict["assetBundleList"] if it1["id"] not in assetBundlePrevDict.keys() ],
-        "resourceList": [ it2 for it2 in jDict["resourceList"] if it2["id"] not in resourcePrevDict.keys() ]
-    }
-    diffChangedDict = {
-        "revision": jDict["revision"],
-        "assetBundleList": [ it1 for it1 in jDict["assetBundleList"] if it1["id"] in assetBundlePrevDict.keys() and it1["generation"] != assetBundlePrevDict[it1["id"]] ],
-        "resourceList": [ it2 for it2 in jDict["resourceList"] if it2["id"] in resourcePrevDict.keys() and it2["generation"] != resourcePrevDict[it2["id"]] ]
-    }
-
-    # diffChangeDict = {
-    #     "revision": jDict["revision"],
-    #     "assetBundleList": [ it1 for it1 in jDict["assetBundleList"] if it1 not in jDictPrev["assetBundleList"] ],
-    #     "resourceList": [ it2 for it2 in jDict["resourceList"] if it2 not in jDictPrev["resourceList"] ]
-    # }
-
-    diffOutputString = f"{__outputPathString}\manifest_diff_new_v{jDictPrev['revision']}_{jDict['revision']}.json"
-    diffOutputPath = Path(diffOutputString)
-    __writeJsonFile(diffNewDict, diffOutputPath)
-    __createSQLiteDB(diffNewDict, f"{diffOutputString[0:-5]}.db", True)
-
-    diffOutputString = f"{__outputPathString}\manifest_diff_changed_v{jDictPrev['revision']}_{jDict['revision']}.json"
-    diffOutputPath = Path(diffOutputString)
-    __writeJsonFile(diffChangedDict, diffOutputPath)
-    __createSQLiteDB(diffChangedDict, f"{diffOutputString[0:-5]}.db", True)
-    diffDict = {
-        "revision": jDict["revision"],
-        "assetBundleList": [],
-        "resourceList": []
-    }
-    for it in diffNewDict["assetBundleList"]:
-        diffDict["assetBundleList"].append(it)
-    for it in diffNewDict["resourceList"]:
-        diffDict["resourceList"].append(it)
-    for it in diffChangedDict["assetBundleList"]:
-        diffDict["assetBundleList"].append(it)
-    for it in diffChangedDict["resourceList"]:
-        diffDict["resourceList"].append(it)
-    return diffDict
+#def __diffRevision(jDict: dict) -> dict:
+#    p = Path(__outputPathString)
+#    manifestList = [it for it in p.iterdir() if re.match(r"^manifest_v\d+.json$", it.name)]
+#    if manifestList.count == 0:
+#        console.print(f"[bold]>>> [Info][/bold] No previous revision json found.\n")
+#        return jDict
+#    manifestList.sort(key=lambda it: it.name, reverse=True)
+#    jDictPrev = json.loads(previousOne.read_bytes())
+#
+#    if jDictPrev["revision"] > jDict["revision"]:
+#        console.print(f"[bold yellow]>>> [Warning][/bold yellow] Old revision, diff operation has been stopped.\n")
+#        return jDict
+#
+#    if jDictPrev["revision"] == jDict["revision"]:
+#        if manifestList.__len__() == 1:
+#            console.print(f"[bold yellow]>>> [Warning][/bold yellow] Duplicate revision, diff operation has been stopped.\n")
+#            return jDict
+#        console.print(f"[bold yellow]>>> [Warning][/bold yellow] Duplicate revision.\n")
+#        jDictPrev = json.loads(manifestList[1].read_bytes())
+#
+#
+#    if jDictPrev["revision"] >= jDict["revision"]:
+#        jDictPrev = json.loads(manifestList[1].read_bytes())
+#        console.print(f"[bold yellow]>>> [Warning][/bold yellow] Duplicate or old revision, diff operation has been stopped.\n")
+#        return jDict
+#
+#    assetBundlePrevDict = {
+#        it["id"]: it["generation"]
+#        for it in jDictPrev["assetBundleList"]
+#    }
+#    resourcePrevDict = {
+#        it["id"]: it["generation"]
+#        for it in jDictPrev["resourceList"]
+#    }
+#
+#    diffNewDict = {
+#        "revision": jDict["revision"],
+#        "assetBundleList": [ it1 for it1 in jDict["assetBundleList"] if it1["id"] not in assetBundlePrevDict.keys() ],
+#        "resourceList": [ it2 for it2 in jDict["resourceList"] if it2["id"] not in resourcePrevDict.keys() ]
+#    }
+#    diffChangedDict = {
+#        "revision": jDict["revision"],
+#        "assetBundleList": [ it1 for it1 in jDict["assetBundleList"] if it1["id"] in assetBundlePrevDict.keys() and it1["generation"] != assetBundlePrevDict[it1["id"]] ],
+#        "resourceList": [ it2 for it2 in jDict["resourceList"] if it2["id"] in resourcePrevDict.keys() and it2["generation"] != resourcePrevDict[it2["id"]] ]
+#    }
+#
+#    # diffChangeDict = {
+#    #     "revision": jDict["revision"],
+#    #     "assetBundleList": [ it1 for it1 in jDict["assetBundleList"] if it1 not in jDictPrev["assetBundleList"] ],
+#    #     "resourceList": [ it2 for it2 in jDict["resourceList"] if it2 not in jDictPrev["resourceList"] ]
+#    # }
+#
+#    diffOutputString = f"{__outputPathString}\manifest_diff_new_v{jDictPrev['revision']}_{jDict['revision']}.json"
+#    diffOutputPath = Path(diffOutputString)
+#    __writeJsonFile(diffNewDict, diffOutputPath)
+#    __createSQLiteDB(diffNewDict, f"{diffOutputString[0:-5]}.db", True)
+#
+#    diffOutputString = f"{__outputPathString}\manifest_diff_changed_v{jDictPrev['revision']}_{jDict['revision']}.json"
+#    diffOutputPath = Path(diffOutputString)
+#    __writeJsonFile(diffChangedDict, diffOutputPath)
+#    __createSQLiteDB(diffChangedDict, f"{diffOutputString[0:-5]}.db", True)
+#    diffDict = {
+#        "revision": jDict["revision"],
+#        "assetBundleList": [],
+#        "resourceList": []
+#    }
+#    for it in diffNewDict["assetBundleList"]:
+#        diffDict["assetBundleList"].append(it)
+#    for it in diffNewDict["resourceList"]:
+#        diffDict["resourceList"].append(it)
+#    for it in diffChangedDict["assetBundleList"]:
+#        diffDict["assetBundleList"].append(it)
+#    for it in diffChangedDict["resourceList"]:
+#        diffDict["resourceList"].append(it)
+#    return diffDict
 
 def __writeJsonFile(d: dict, path: Path):
     # Write the string to a json file
@@ -338,7 +337,7 @@ def __appendType(d: dict) -> dict:
         it["type"] = typeStr
     return d
 
-def doDecrypt(diffMode: DiffMode) -> dict:
+def doDecrypt() -> dict:
     # Decrypt cache file
     protoDb = __decryptCache()
     # Convert protobuf to json string
@@ -347,7 +346,7 @@ def doDecrypt(diffMode: DiffMode) -> dict:
     jDict = json.loads(jsonString)
     jDict = __appendType(jDict)
     # Define SQLite DB file output path string
-    pathString = f"E:\Game_Dump\idolypride\HoshimiToolkit-master\ipr\DecryptedCaches\manifest_v{jDict['revision']}.db"
+    pathString = f"./DecryptedCaches/manifest_v{jDict['revision']}.db"
     # Create SQLite DB file
     __createSQLiteDB(jDict, pathString)
     # Define the output path of json file
@@ -355,8 +354,10 @@ def doDecrypt(diffMode: DiffMode) -> dict:
     # Write the json string into a file
     __writeJsonFile(jDict, outputPath)
     # Diff
-    diffDict = __diffRevision(jDict)
-    if diffMode == DiffMode.Diff:
-        return diffDict
-    else:
-        return jDict
+#    diffDict = __diffRevision(jDict)
+    return jDict
+#    if diffMode == DiffMode.Diff:
+#        return diffDict
+#    else:
+#        return jDict
+#

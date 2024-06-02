@@ -7,11 +7,11 @@ from eWorkingMode import WorkingMode
 global output_dir
 output_dir="./gkmas"
 
-download_asset = 0
+download_asset = 1
 download_resource = 0
 
-diffMode = DiffMode.Diff
-jDict = doDecrypt(diffMode)
+#diffMode = DiffMode.Diff
+jDict = doDecrypt()
 
 download(jDict, output_dir,download_asset,download_resource)
 

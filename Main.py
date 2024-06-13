@@ -9,11 +9,12 @@ output_dir="./gkmas"
 
 download_asset = 1
 download_resource = 0
+download_worker_num = 16
 
 #diffMode = DiffMode.Diff
 jDict = doDecrypt()
 
-download(jDict, output_dir,download_asset,download_resource)
+download(jDict, output_dir, download_asset, download_resource, download_worker_num)
 
 unObfuscate(jDict)
 rename(jDict)

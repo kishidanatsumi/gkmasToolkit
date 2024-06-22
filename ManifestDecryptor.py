@@ -62,7 +62,7 @@ def __decryptCache(key = __KEY, iv = __IV) -> octodb_pb2.Database:
     # Revision number should probably change with every update..?
     console.print(f"[bold]>>> [Info][/bold] Current revision : {protoDatabase.revision}\n")
     # Get output dir and append it to the filename
-    outputPath = Path(f"{__outputPathString}\manifest_v{protoDatabase.revision}")
+    outputPath = Path(f"{__outputPathString}/manifest_v{protoDatabase.revision}")
     # Write the decrypted cache to a local file
     try:
         outputPath.parent.mkdir(parents=True, exist_ok=True)
@@ -346,11 +346,11 @@ def doDecrypt() -> dict:
     jDict = json.loads(jsonString)
     jDict = __appendType(jDict)
     # Define SQLite DB file output path string
-    pathString = f"./DecryptedCaches/manifest_v{jDict['revision']}.db"
+    pathString = Path(f"{__outputPathString}/manifest_v{jDict['revision']}.db")
     # Create SQLite DB file
     __createSQLiteDB(jDict, pathString)
     # Define the output path of json file
-    outputPath = Path(f"{__outputPathString}\manifest_v{protoDb.revision}.json")
+    outputPath = Path(f"{__outputPathString}/manifest_v{protoDb.revision}.json")
     # Write the json string into a file
     __writeJsonFile(jDict, outputPath)
     # Diff
